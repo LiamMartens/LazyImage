@@ -1,23 +1,26 @@
 var LazyImage = {
-	Load:function() {
-		var els = document.querySelectorAll('[data-lq][data-hq]');
+	Parse:function() {
+		var els = document.querySelectorAll("[data-lazy]");
 		for(var i = 0; i < els.length; i++) {
-			var img = new Image();
-			img.reference = els[i];
-			img.onload = function() {
-				if(this.reference.tagName.toUpperCase() == "IMG") {
-					this.reference.src = this.src;
-				} else { this.reference.style.backgroundImage = "url('"+this.src+"')"; }
+			var el  = els[i];
+			el._index = -1;
+			var imgs = el.getAttribute("data-lazy").split(";");
+			el.removeAttribute("data-lazy");
+			for(var j = 0; j < imgs.length; j++) {
+				var img = new Image();
+				img.onload = function() {
+					if(this._index > this._reference._index) {
+						if(this._reference.tagName.toUpperCase()=="IMG") {
+							this._reference.src = this.src;
+						} else { this._reference.style.backgroundImage = "url("+this.src+")"; }
+						this._reference._index = this._index;
+					}
+				}
+				img._index = j;
+				img._reference = el;
+				img.src = imgs[j];
 			}
-			img.src = els[i].getAttribute("data-hq");
-			//set current lq image
-			if(els[i].tagName.toUpperCase() == "IMG") {
-				els[i].src = els[i].getAttribute("data-lq");
-			} else { els[i].style.backgroundImage = "url('"+els[i].getAttribute("data-lq")+"')"; }
-			//remove attributes
-			els[i].removeAttribute("data-lq");
-			els[i].removeAttribute("data-hq");
 		}
-	}
+	}	
 };
-LazyImage.Load();
+LazyImage.Parse();
